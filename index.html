@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乐子定制产品拍卖</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .auth-forms {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 300px;
+            margin: 0 1rem;
+        }
+        
+        .form-container h2 {
+            margin-top: 0;
+            color: #ff6b6b;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #ff5252;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            height: 200px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+        
+        .product-info {
+            padding: 1rem;
+        }
+        
+        .product-info h3 {
+            margin-top: 0;
+        }
+        
+        .product-info p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .free-tag {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stock-info {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stock-low {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .stock-out {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: white;
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            padding: 0.3rem 0.6rem;
+            margin-left: 0.5rem;
+            width: auto;
+        }
+        
+        .admin-panel {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .admin-panel h2 {
+            margin-top: 0;
+            color: #ff6b6b;
+        }
+        
+        .admin-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        
+        .admin-form button {
+            height: fit-content;
+        }
+        
+        .data-export {
+            margin-top: 1rem;
+            text-align: right;
+        }
+        
+        .alert {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>乐子定制产品拍卖</h1>
+        <p>所有产品完全免费，仅供娱乐！</p>
+        <div id="userInfo" class="user-info hidden">
+            欢迎，<span id="usernameDisplay"></span>
+            <button id="logoutBtn" class="logout-btn">退出</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div id="authSection" class="auth-forms">
+            <div class="form-container">
+                <h2>登录</h2>
+                <form id="loginForm">
+                    <input type="text" id="loginQq" placeholder="QQ号" required>
+                    <input type="password" id="loginPassword" placeholder="密码" required>
+                    <button type="submit">登录</button>
+                </form>
+            </div>
+            
+            <div class="form-container">
+                <h2>注册</h2>
+                <form id="registerForm">
+                    <input type="text" id="registerQq" placeholder="QQ号" required>
+                    <input type="password" id="registerPassword" placeholder="密码" required>
+                    <button type="submit">注册</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="productsSection" class="hidden">
+            <!-- 管理员面板 -->
+            <div id="adminPanel" class="admin-panel hidden">
+                <h2>库存管理</h2>
+                <div id="githubAlert" class="alert hidden">
+                    注意：GitHub Token已配置，但前端存储Token不安全！请勿在生产环境使用。
+                </div>
+                <form id="adminForm" class="admin-form">
+                    <div>
+                        <label for="productName">产品名称</label>
+                        <input type="text" id="productName" placeholder="产品名称" required>
+                    </div>
+                    <div>
+                        <label for="productDescription">产品描述</label>
+                        <input type="text" id="productDescription" placeholder="产品描述" required>
+                    </div>
+                    <div>
+                        <label for="productStock">库存数量</label>
+                        <input type="number" id="productStock" placeholder="库存数量" min="0" required>
+                    </div>
+                    <button type="submit">添加产品</button>
+                </form>
+                <div class="data-export">
+                    <button id="exportDataBtn">导出用户数据</button>
+                    <button id="syncDataBtn">同步数据到GitHub</button>
+                </div>
+            </div>
+            
+            <h2>热门乐子产品</h2>
+            <div id="productsContainer" class="products">
+                <!-- 产品将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 配置GitHub仓库信息 - 请替换为你的仓库信息
+        const GITHUB = {
+            owner: 'xianyumc',  // 替换为你的GitHub用户名
+            repo: 'lezipaimai',         // 替换为你的仓库名
+            branch: 'main',                 // 默认分支
+            token: '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'
+        };
+        
+        // 管理员账号
+        const ADMIN_QQ = "3295977308";
+        const ADMIN_PASSWORD = "lan55114022";
+        
+        // 用户数据存储
+        let users = [];
+        // 产品数据存储
+        let products = [];
+        
+        let currentUser = null;
+        
+        // DOM元素
+        const authSection = document.getElementById('authSection');
+        const productsSection = document.getElementById('productsSection');
+        const productsContainer = document.getElementById('productsContainer');
+        const userInfo = document.getElementById('userInfo');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const adminPanel = document.getElementById('adminPanel');
+        const adminForm = document.getElementById('adminForm');
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        const syncDataBtn = document.getElementById('syncDataBtn');
+        const githubAlert = document.getElementById('githubAlert');
+        
+        // 显示GitHub Token警告
+        githubAlert.classList.remove('hidden');
+        
+        // 初始化页面
+        async function init() {
+            // 尝试从GitHub加载数据
+            await loadDataFromGitHub();
+            
+            // 检查是否已登录
+            updateUI();
+        }
+        
+        // 从GitHub加载数据
+        async function loadDataFromGitHub() {
+            try {
+                // 加载用户数据
+                const usersData = await fetchFromGitHub('用户.txt');
+                users = usersData ? JSON.parse(usersData) : [];
+                
+                // 如果没有用户数据，添加默认管理员
+                if (users.length === 0 && ADMIN_QQ && ADMIN_PASSWORD) {
+                    users.push({
+                        qq: ADMIN_QQ,
+                        password: ADMIN_PASSWORD,
+                        isAdmin: true,
+                        registerTime: new Date().toISOString()
+                    });
+                    await saveUsersToGitHub();
+                }
+                
+                // 加载产品数据
+                const productsData = await fetchFromGitHub('产品.txt');
+                products = productsData ? JSON.parse(productsData) : [];
+                
+                // 如果没有产品数据，添加默认产品
+                if (products.length === 0) {
+                    products = [
+                        {
+                            id: 1,
+                            name: "乐子表情包合集",
+                            description: "包含100+精选乐子表情包，聊天必备",
+                            stock: 0,
+                            image: "[产品图片]"
+                        },
+                        {
+                            id: 2,
+                            name: "乐子头像生成器",
+                            description: "一键生成专属乐子风格头像",
+                            stock: 0,
+                            image: "[产品图片]"
+                        },
+                        {
+                            id: 3,
+                            name: "乐子语音包",
+                            description: "经典乐子语音，游戏开黑必备",
+                            stock: 0,
+                            image: "[产品图片]"
+                        },
+                        {
+                            id: 4,
+                            name: "乐子壁纸合集",
+                            description: "高清乐子风格壁纸，手机电脑通用",
+                            stock: 0,
+                            image: "[产品图片]"
+                        }
+                    ];
+                    await saveProductsToGitHub();
+                }
+                
+                // 加载产品显示
+                loadProducts();
+                
+            } catch (error) {
+                console.error('从GitHub加载数据失败:', error);
+                alert('从GitHub加载数据失败，请检查控制台查看详情');
+            }
+        }
+        
+        // 从GitHub获取文件内容
+        async function fetchFromGitHub(filePath) {
+            try {
+                const response = await fetch(
+                    `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${filePath}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${GITHUB.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        console.log(`文件 ${filePath} 不存在，将创建新文件`);
+                        return null;
+                    }
+                    throw new Error(`GitHub API 错误: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return atob(data.content.replace(/\s/g, ''));
+            } catch (error) {
+                console.error(`获取 ${filePath} 失败:`, error);
+                throw error;
+            }
+        }
+        
+        // 保存数据到GitHub
+        async function saveToGitHub(filePath, content, message) {
+            try {
+                // 首先获取文件的SHA（如果存在）
+                let sha = null;
+                try {
+                    const response = await fetch(
+                        `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${filePath}`,
+                        {
+                            headers: {
+                                'Authorization': `token ${GITHUB.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        sha = data.sha;
+                    }
+                } catch (e) {
+                    // 文件可能不存在，忽略错误
+                }
+                
+                const response = await fetch(
+                    `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${filePath}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${GITHUB.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message || `更新 ${filePath}`,
+                            content: btoa(unescape(encodeURIComponent(content))),
+                            sha: sha,
+                            branch: GITHUB.branch
+                        })
+                    }
+                );
+                
+                if (!response.ok) {
+                    throw new Error(`保存到GitHub失败: ${response.status}`);
+                }
+                
+                console.log(`成功保存 ${filePath} 到GitHub`);
+                return true;
+            } catch (error) {
+                console.error(`保存 ${filePath} 到GitHub失败:`, error);
+                throw error;
+            }
+        }
+        
+        // 保存用户数据到GitHub
+        async function saveUsersToGitHub() {
+            try {
+                await saveToGitHub(
+                    '用户.txt',
+                    JSON.stringify(users, null, 2),
+                    '更新用户数据'
+                );
+                return true;
+            } catch (error) {
+                console.error('保存用户数据失败:', error);
+                alert('保存用户数据失败，请检查控制台查看详情');
+                return false;
+            }
+        }
+        
+        // 保存产品数据到GitHub
+        async function saveProductsToGitHub() {
+            try {
+                await saveToGitHub(
+                    '产品.txt',
+                    JSON.stringify(products, null, 2),
+                    '更新产品数据'
+                );
+                return true;
+            } catch (error) {
+                console.error('保存产品数据失败:', error);
+                alert('保存产品数据失败，请检查控制台查看详情');
+                return false;
+            }
+        }
+        
+        // 登录表单
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const qq = document.getElementById('loginQq').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.qq === qq && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                updateUI();
+                alert('登录成功！');
+            } else {
+                alert('QQ号或密码错误！');
+            }
+        });
+        
+        // 注册表单
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const qq = document.getElementById('registerQq').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (users.some(u => u.qq === qq)) {
+                alert('该QQ号已注册！');
+                return;
+            }
+            
+            const newUser = { 
+                qq, 
+                password,
+                registerTime: new Date().toISOString()
+            };
+            
+            users.push(newUser);
+            const success = await saveUsersToGitHub();
+            
+            if (success) {
+                currentUser = newUser;
+                updateUI();
+                alert('注册成功！');
+            }
+        });
+        
+        // 退出登录
+        logoutBtn.addEventListener('click', function() {
+            currentUser = null;
+            updateUI();
+        });
+        
+        // 管理员表单 - 添加新产品
+        adminForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('productName').value;
+            const description = document.getElementById('productDescription').value;
+            const stock = parseInt(document.getElementById('productStock').value);
+            
+            const newProduct = {
+                id: Date.now(), // 使用时间戳作为唯一ID
+                name,
+                description,
+                stock,
+                image: "[产品图片]"
+            };
+            
+            products.push(newProduct);
+            const success = await saveProductsToGitHub();
+            
+            if (success) {
+                loadProducts();
+                // 清空表单
+                adminForm.reset();
+                alert('产品添加成功！');
+            }
+        });
+        
+        // 导出用户数据
+        exportDataBtn.addEventListener('click', function() {
+            exportUserData();
+        });
+        
+        // 同步数据到GitHub
+        syncDataBtn.addEventListener('click', async function() {
+            if (!currentUser || currentUser.qq !== ADMIN_QQ) {
+                alert('只有管理员可以同步数据！');
+                return;
+            }
+            
+            try {
+                await saveUsersToGitHub();
+                await saveProductsToGitHub();
+                alert('数据已成功同步到GitHub！');
+            } catch (error) {
+                alert('同步数据失败，请检查控制台查看详情');
+            }
+        });
+        
+        // 导出用户数据
+        function exportUserData() {
+            if (!currentUser || currentUser.qq !== ADMIN_QQ) {
+                alert('只有管理员可以导出数据！');
+                return;
+            }
+            
+            // 创建数据文本
+            let dataText = "用户数据记录\n\n";
+            dataText += "生成时间: " + new Date().toLocaleString() + "\n";
+            dataText += "用户总数: " + users.length + "\n\n";
+            
+            users.forEach(user => {
+                dataText += `QQ: ${user.qq}, 注册时间: ${user.registerTime || '未知'}\n`;
+            });
+            
+            // 创建下载链接
+            const blob = new Blob([dataText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '用户数据.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('用户数据已导出为文本文件！');
+        }
+       // 加载产品
+        function loadProducts() {
+            productsContainer.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                
+                // 根据库存状态设置CSS类
+                let stockClass = '';
+                if (product.stock <= 0) {
+                    stockClass = 'stock-out';
+                } else if (product.stock <= 5) {
+                    stockClass = 'stock-low';
+                }
+                
+                productCard.innerHTML = `
+                    <div class="product-image">${product.image}</div>
+                    <div class="product-info">
+                        <span class="free-tag">免费</span>
+                        <h3>${product.name}</h3>
+                        <p>${product.description}</p>
+                        <div class="stock-info ${stockClass}">
+                            库存: ${product.stock <= 0 ? '已售罄' : product.stock + '件'}
+                        </div>
+                        <button class="claim-btn" data-id="${product.id}" ${product.stock <= 0 ? 'disabled' : ''}>
+                            ${product.stock <= 0 ? '已抢光' : '立即领取'}
+                        </button>
+                    </div>
+                `;
+                
+                productsContainer.appendChild(productCard);
+            });
+            
+            // 添加领取按钮事件监听
+            document.querySelectorAll('.claim-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    await claimProduct(productId);
+                });
+            });
+        }
+        
+        // 领取产品
+        async function claimProduct(productId) {
+            const productIndex = products.findIndex(p => p.id === productId);
+            
+            if (productIndex !== -1 && products[productIndex].stock > 0) {
+                products[productIndex].stock--;
+                const success = await saveProductsToGitHub();
+                
+                if (success) {
+                    loadProducts();
+                    alert(`成功领取 ${products[productIndex].name}！`);
+                }
+            }
+        }
+        
+        // 更新UI状态
+        function updateUI() {
+            if (currentUser) {
+                authSection.classList.add('hidden');
+                productsSection.classList.remove('hidden');
+                userInfo.classList.remove('hidden');
+                usernameDisplay.textContent = currentUser.qq;
+                
+                // 检查是否是管理员
+                if (currentUser.qq === ADMIN_QQ) {
+                    adminPanel.classList.remove('hidden');
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+            } else {
+                authSection.classList.remove('hidden');
+                productsSection.classList.add('hidden');
+                userInfo.classList.add('hidden');
+            }
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>
